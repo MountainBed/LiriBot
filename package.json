@@ -1,0 +1,25 @@
+{
+  "name": "liri-bot-ross",
+  "version": "1.0.0",
+  "description": "node app",
+  "main": "keys.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MountainBed/LiriBot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/MountainBed/LiriBot/issues"
+  },
+  "homepage": "https://github.com/MountainBed/LiriBot#readme",
+  "dependencies": {
+    "chalk": "^2.1.0",
+    "node-spotify-api": "^1.0.7",
+    "request": "^2.81.0",
+    "twitter": "^1.7.1"
+  }
+}
