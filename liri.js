@@ -15,23 +15,15 @@ var command = process.argv[2];
 var searchArray = process.argv.slice(3);
 var searchString = "";
 
-function findMovie (searchQuery) {
-  request("http://www.omdbapi.com/?t=" + searchQuery + "&y=&plot=short&apikey=40e9cece", function (error, response, body) {
-    if (!error && response.statusCode === 200) {
-      var movieInfo = JSON.parse(body);
-
-      console.log("****Results for " + movieInfo.Title + "****");
-      console.log("Title: " + movieInfo.Title);
-      console.log("IMDB rating: " + movieInfo.Ratings[0].Value);
-      console.log("Rotten Tomatoes rating: " + movieInfo.Ratings[1].Value);
-      console.log("Production country: " + movieInfo.Country);
-      console.log("Language: " + movieInfo.Language);
-      console.log("Plot: " + movieInfo.Plot);
-      console.log("Actors: " + movieInfo.Actors);
+function queryString () {
+  for (var i = 0; i < searchArray.length; i++) {
+    if (i > 0) {
+      searchString = searchString + "+" + searchArray[i];
+    } else {
+      searchString = searchArray[i];
     }
-  });
-}
-
+  }
+};
 function findTweet () {
   client.get("statuses/user_timeline", function (error, tweets, response) {
     if (!error) {
@@ -44,14 +36,17 @@ function findTweet () {
     }
   });
 };
-
 function findTrack (searchQuery) {
+  if (searchQuery === "") {
+    searchQuery = "The+Sign+Ace+of+Base";
+  }
   newSpot.search({ type: "track", query: searchQuery }, function (err, data) {
     if (err) {
       console.log("Error occurred: " + err);
       return;
     }
     var songInfo = data.tracks.items[0];
+
     console.log("===========");
     console.log("Artist: " + songInfo.artists[0].name);
     console.log("Album: " + songInfo.album.name);
@@ -59,14 +54,63 @@ function findTrack (searchQuery) {
     console.log("Link: " + songInfo.preview_url);
   });
 };
-function queryString () {
-  for (var i = 0; i < searchArray.length; i++) {
-    if (i > 0) {
-      searchString = searchString + "+" + searchArray[i];
-    } else {
-      searchString = searchArray[i];
-    }
+function findMovie (searchQuery) {
+  if (searchQuery === "") {
+    searchQuery = "Mr+Nobody";
   }
+  request("http://www.omdbapi.com/?t=" + searchQuery + "&y=&plot=short&apikey=40e9cece", function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      var movieInfo = JSON.parse(body);
+
+      if (movieInfo.Title === undefined || movieInfo.Title === null) {
+        console.log("Movie not found.");
+        return;
+      }
+
+      console.log("****Results for " + movieInfo.Title + "****");
+      console.log("Title: " + movieInfo.Title);
+      for (var i = 0; i < movieInfo.Ratings.length; i++) {
+        console.log(movieInfo.Ratings[i].Source + ": " + movieInfo.Ratings[i].Value);
+      }
+      console.log("Production country: " + movieInfo.Country);
+      console.log("Language: " + movieInfo.Language);
+      console.log("Plot: " + movieInfo.Plot);
+      console.log("Actors: " + movieInfo.Actors);
+    } else {
+      console.log("There was an error: " + error);
+    }
+  });
+};
+function randomCommand () {
+  fs.readFile("random.txt", "utf8", function (err, data) {
+    if (err) {
+      console.log(err);
+      return;
+    }
+    var output = data.split(",");
+    command = output[0];
+    for (var i = 1; i < output.length; i++) {
+      if (i > 0) {
+        searchString = searchString + "+" + output[i];
+      } else {
+        searchString = output[i];
+      }
+    }
+
+    switch (command) {
+      case "my-tweets":
+        findTweet();
+        break;
+      case "spotify-this-song":
+        findTrack(searchString);
+        break;
+      case "movie-this":
+        findMovie(searchString);
+        break;
+      default:
+        console.log("This is not a recognized command.");
+    }
+  });
 };
 
 function mainApp () {
@@ -74,17 +118,19 @@ function mainApp () {
 
   switch (command) {
     case "my-tweets":
-      console.log("Twitter");
+      findTweet();
       break;
     case "spotify-this-song":
-      console.log("spotify");
+      findTrack(searchString);
       break;
     case "movie-this":
-      console.log("movie");
+      findMovie(searchString);
       break;
     case "do-what-it-says":
-      console.log("Text file");
+      randomCommand();
       break;
+    default:
+      console.log("This is not a recognized command.");
   }
 }
 
