@@ -27,9 +27,19 @@ function queryString () {
 function findTweet () {
   client.get("statuses/user_timeline", function (error, tweets, response) {
     if (!error) {
+      fs.appendFile("log.txt", "\nmy-tweets command\n", function (err) {
+        if (err) {
+          console.log("Could not write information to text file.");
+        }
+      });
       for (var i = 0; i < tweets.length; i++) {
         console.log(chalk.red("\"" + tweets[tweets.length - 1 - i].text + "\""));
         console.log(chalk.blue("   " + twitterHandle + " on " + tweets[tweets.length - 1 - i].created_at) + "\n");
+        fs.appendFile("log.txt", "\"" + tweets[tweets.length - 1 - i].text + "\" tweeted by " + twitterHandle + " on " + tweets[tweets.length - 1 - i].created_at + "\n", function (err) {
+          if (err) {
+            console.log("Could not write information to text file.");
+          }
+        });
       }
     } else {
       console.log("There was an error.");
@@ -52,6 +62,12 @@ function findTrack (searchQuery) {
     console.log("Album: " + songInfo.album.name);
     console.log("Name: " + songInfo.name);
     console.log("Link: " + songInfo.preview_url);
+
+    fs.appendFile("log.txt", "\nspotify-this-song command\nArtist: " + songInfo.artists[0].name + "\nAlbum: " + songInfo.album.name + "\nName: " + songInfo.name + "\nLink: " + songInfo.preview_url + "\n", function (err) {
+      if (err) {
+        console.log("Could not write information to text file.");
+      }
+    });
   });
 };
 function findMovie (searchQuery) {
@@ -61,6 +77,7 @@ function findMovie (searchQuery) {
   request("http://www.omdbapi.com/?t=" + searchQuery + "&y=&plot=short&apikey=40e9cece", function (error, response, body) {
     if (!error && response.statusCode === 200) {
       var movieInfo = JSON.parse(body);
+      var movieLogString = "\nmovie-this command\n";
 
       if (movieInfo.Title === undefined || movieInfo.Title === null) {
         console.log("Movie not found.");
@@ -68,14 +85,27 @@ function findMovie (searchQuery) {
       }
 
       console.log("****Results for " + movieInfo.Title + "****");
+      movieLogString += "****Results for " + movieInfo.Title + "****\n";
       console.log("Title: " + movieInfo.Title);
+      movieLogString += "Title: " + movieInfo.Title + "\n";
       for (var i = 0; i < movieInfo.Ratings.length; i++) {
         console.log(movieInfo.Ratings[i].Source + ": " + movieInfo.Ratings[i].Value);
+        movieLogString += movieInfo.Ratings[i].Source + ": " + movieInfo.Ratings[i].Value + "\n";
       }
       console.log("Production country: " + movieInfo.Country);
+      movieLogString += "Production country: " + movieInfo.Country + "\n";
       console.log("Language: " + movieInfo.Language);
+      movieLogString += "Language: " + movieInfo.Language + "\n";
       console.log("Plot: " + movieInfo.Plot);
+      movieLogString += "Plot: " + movieInfo.Plot + "\n";
       console.log("Actors: " + movieInfo.Actors);
+      movieLogString += "Actors: " + movieInfo.Actors + "\n";
+
+      fs.appendFile("log.txt", movieLogString, function (err) {
+        if (err) {
+          console.log("Could not write information to text file.");
+        }
+      });
     } else {
       console.log("There was an error: " + error);
     }
